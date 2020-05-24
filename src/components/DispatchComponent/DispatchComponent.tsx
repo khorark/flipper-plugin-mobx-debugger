@@ -1,5 +1,6 @@
 import React, { memo, useState, useCallback } from 'react';
-import { FlexRow, Input, MultiLineInput, Button } from 'flipper';
+import { FlexRow, Input, MultiLineInput, Button, Select, styled } from 'flipper';
+import { DispatchAction } from '../..';
 
 const commonMargin = {
   margin: '0.5em 1em 0.5em 1em',
@@ -11,39 +12,58 @@ const textBox = {
   ...commonMargin,
 };
 
+const selectOptions = {
+  replace: 'replace',
+  add: 'add',
+  remove: 'remove',
+};
+
+const SelectOp = styled(Select)({
+  ...commonMargin,
+});
+
+type op = 'replace' | 'add' | 'remove';
+
 interface IProps {
-  onDispatch: (payload: { action: string; payload: any }) => void;
+  onDispatch: (payload: DispatchAction) => void;
 }
 
 const DispatchComponent: React.FC<IProps> = ({ onDispatch }) => {
-  const [invokeActionName, setinvokeActionName] = useState('');
-  const [invokeActionPayloadString, setinvokeActionPayloadString] = useState('');
+  const [path, setPath] = useState('');
+  const [invokePayloadString, setinvokeActionPayloadString] = useState('');
+  const [op, setOp] = useState<op>('add');
 
-  const setinvokeActionNameHandler = useCallback((event) => setinvokeActionName(event.target.value), []);
-  const setinvokeActionPayloadStringHandler = useCallback(
-    (event) => setinvokeActionPayloadString(event.target.value),
-    [],
-  );
+  const setPathHandler = useCallback((event) => setPath(event.target.value), []);
+  const setinvokePayloadStringHandler = useCallback((event) => setinvokeActionPayloadString(event.target.value), []);
   const onDispatchHandler = useCallback(() => {
-    const payload = invokeActionPayloadString.trim() == '' ? [] : JSON.parse(invokeActionPayloadString);
-    onDispatch({ action: invokeActionName, payload });
-  }, [invokeActionName, invokeActionPayloadString]);
+    const value = invokePayloadString.trim() == '' ? [] : JSON.parse(invokePayloadString);
+    onDispatch({
+      op,
+      path,
+      value,
+    });
+  }, [path, invokePayloadString]);
+
+  const onChangeWithKey = useCallback((key: op) => setOp(key), []);
 
   return (
     <>
       <FlexRow>
-        <Input placeholder={'Type your action here'} style={commonMargin} onChange={setinvokeActionNameHandler} />
+        <SelectOp options={selectOptions} selected={op} onChangeWithKey={onChangeWithKey} />
+      </FlexRow>
+      <FlexRow>
+        <Input placeholder={'Type your path here'} style={commonMargin} onChange={setPathHandler} />
       </FlexRow>
       <FlexRow>
         <MultiLineInput
           placeholder={'Type your payload json here'}
           style={textBox}
-          onChange={setinvokeActionPayloadStringHandler}
+          onChange={setinvokePayloadStringHandler}
         />
       </FlexRow>
       <FlexRow>
         <Button onClick={onDispatchHandler} style={commonMargin}>
-          Dispatch
+          Apply patch
         </Button>
       </FlexRow>
     </>

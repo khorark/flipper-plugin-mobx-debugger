@@ -30,6 +30,12 @@ export enum TabLabel {
   diff = 'Diff',
 }
 
+export type DispatchAction = {
+  op: 'replace' | 'add' | 'remove';
+  path: string;
+  value: any;
+};
+
 export default class ReduxViewer extends FlipperPlugin<State, any, any> {
   state = {
     selectedId: '',
@@ -50,7 +56,7 @@ export default class ReduxViewer extends FlipperPlugin<State, any, any> {
           ...persistedState,
           actions: [payload],
         };
-      case 'actionDispatched':
+      case 'action':
         return {
           ...persistedState,
           actions: [...persistedState.actions, payload],
@@ -69,20 +75,15 @@ export default class ReduxViewer extends FlipperPlugin<State, any, any> {
     this.props.setPersistedState({ actions: [] });
   };
 
-  handleDispatch = ({ action, payload }: { action: string; payload: any }) => {
+  handleDispatch = (payload: DispatchAction) => {
     this.setState({ error: null });
 
     try {
-      this.client
-        .call('dispatchAction', {
-          type: action,
-          payload: payload,
-        })
-        .then((res) => {
-          if (res.error) {
-            this.setState({ error: res.message });
-          }
-        });
+      this.client.call('applyPatch', payload).then((res) => {
+        if (res.error) {
+          this.setState({ error: res.message });
+        }
+      });
     } catch (ex) {
       if (ex instanceof SyntaxError) {
         // json format wrong
