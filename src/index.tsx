@@ -47,9 +47,6 @@ export default class ReduxViewer extends FlipperPlugin<State, any, any> {
   };
 
   static persistedStateReducer(persistedState: PersistedState, method: string, payload: Row) {
-    console.log('payload: ', payload);
-    console.log('method', method);
-
     switch (method) {
       case 'init':
         return {
