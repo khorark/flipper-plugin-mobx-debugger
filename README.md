@@ -23,7 +23,7 @@ cd ios && pod install
 
 ```javascript
 import { spy } from 'mobx';
-import { createMobxDebugger } from 'flipper-mobx';
+import { createMobxDebugger } from 'mobx-flipper';
 
 const store = new Store(); // your store
 
